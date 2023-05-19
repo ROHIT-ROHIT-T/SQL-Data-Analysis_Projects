@@ -1,0 +1,46 @@
+Julia asked her students to create some coding challenges. Write a query to print the hacker_id, name, and the total number of challenges created by each student. 
+Sort your results by the total number of challenges in descending order. If more than one student created the same number of challenges, then sort the result by hacker_id. 
+If more than one student created the same number of challenges and the count is less than the maximum number of challenges created, then exclude those students from the result.
+
+Input Format
+
+The following tables contain challenge data:
+
+Hackers: The hacker_id is the id of the hacker, and name is the name of the hacker. 
+
+Challenges: The challenge_id is the id of the challenge, and hacker_id is the id of the student who created the challenge.
+
+SOLUTION: 
+
+
+
+WITH tbl_num_challenges as (
+    
+SELECT      H.hacker_id,
+            H.name,
+            COUNT(C.challenge_id) as num_challenges
+FROM        Hackers H
+JOIN        Challenges C ON C.hacker_id =H.hacker_id
+GROUP BY    H.hacker_id, H.name
+-- ORDER BY    num_challenges desc 
+-- We cannot use order by clause in Contemporary Table(WITH)
+)
+
+,tbl_count_challenges as (
+select      num_challenges,
+            count(num_challenges) as count_challenges
+FROM        tbl_num_challenges
+GROUP BY    num_challenges
+--order by    tot_challenges desc
+)
+
+SELECT      tnc.hacker_id,
+            tnc.name,
+            tnc.num_challenges
+FROM        tbl_num_challenges tnc
+JOIN        tbl_count_challenges  tcc on tcc.num_challenges = tnc.num_challenges  
+WHERE       tcc.count_challenges <=1
+            OR
+            tnc.num_challenges = (SELECT max(num_challenges) FROM tbl_num_challenges)
+
+ORDER BY    tnc.num_challenges desc,tnc.hacker_id;
